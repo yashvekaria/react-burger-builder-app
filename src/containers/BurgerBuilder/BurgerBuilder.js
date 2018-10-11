@@ -29,6 +29,7 @@ class BurgerBuilder extends Component {
     
 
     componentDidMount() {
+        console.log(this.props);
         axios.get('https://react-my-burger-99f0a.firebaseio.com/ingridents.json')
             .then(res => {
                 this.setState({ ingredients: res.data })
@@ -88,31 +89,16 @@ class BurgerBuilder extends Component {
         this.setState({ purchasing: false });
     }
 
-    purchaseContinueHandler = () => {
-        this.setState({ loading: true });
-        const orderData = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Yash Vekaria',
-                address: {
-                    street: '8 Hatheesing Park',
-                    zipCode: '380051',
-                    country: 'India'
-                },
-                email: 'yashvekaria@gmail.com'
-            },
-            paymentMethod: 'Cash',
-            deliveryMethod: 'fastest'
-        };
-
-        axios.post('/order.json', orderData)
-            .then(response => {
-                this.setState({ loading: false, purchasing: false });
-            })
-            .catch(error => {
-                this.setState({ loading: false, purchasing: false });
-            });
+    purchaseContinueHandler = () => {       
+        const queryParams = [];
+        for (let i in this.state.ingredients) {
+            queryParams.push(encodeURIComponent(i)+ '=' + encodeURIComponent(this.state.ingredients[i]));
+        }
+        const queryString = queryParams.join('&');
+        this.props.history.push({
+            pathname: '/checkout',
+            search: queryString
+        });
     }
 
 
@@ -132,7 +118,7 @@ class BurgerBuilder extends Component {
         if (this.state.ingredients) {
             burger = (
                 <Aux>
-                    <Burger ingredient={this.state.ingredients} />
+                    <Burger ingredients={this.state.ingredients} />
 
                     <BuildControls
                         ingredientAdded={this.addIngredientHandler}
